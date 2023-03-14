@@ -2,7 +2,7 @@
  * Comunication.h
  *
  *  Created on: 14 Mar 2023
-*      Author: Bart Bas Elsenaar
+ *      Author: Bart Bas Elsenaar
  */
 
 #ifndef COMUNICATION_H_
@@ -10,20 +10,20 @@
 
 #include <windows.h>
 
-typedef struct Comunications{
-	void (*Close)(struct Comunications *self);
-	BOOLEAN (*Send)(struct Comunications *self);
-	int val;
-	int (*a)(struct Comunications *self, int val);
-	HANDLE hComm;
-	DWORD dNoOfBytesWritten;
-	char lpBuffer[20];
-	DCB dcb;
+typedef struct Communications {
+	void (*Close)(struct Communications *self); 		// close handle
+	BOOLEAN (*Send)(struct Communications *self); 	// send msg
+	int val;										// Lenght of array
+	int (*a)(struct Communications *self, int val);	// debug function for val + val
+	HANDLE hComm;									// storage of hComm handle
+	DWORD dNoOfBytesWritten;						// Number of bytes send out
+	char msgBuffer[26];								// Buffer for msg to be send
+	DCB dcb;										// storage for DCB
+	BOOLEAN (*Recieve)(struct Communications *self);
+	char Recieved[26];
 
-}Comunications;
+} Communications;
 
-Comunications commSetup();
-
-void closeComms();
+Communications commSetup();			// Default INIT of the Communications struct
 
 #endif /* COMUNICATION_H_ */

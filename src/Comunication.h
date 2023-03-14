@@ -12,6 +12,7 @@
 
 typedef struct Comunications{
 	void (*Close)(struct Comunications *self);
+	BOOLEAN (*Send)(struct Comunications *self);
 	int val;
 	int (*a)(struct Comunications *self, int val);
 	HANDLE hComm;

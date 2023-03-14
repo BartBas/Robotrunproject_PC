@@ -10,10 +10,11 @@ int main(void) {
 
 	Comunications myCom = commSetup();
 
+	for (int i = 0; i < myCom.val; i++) {
+		myCom.lpBuffer[i] = i + 1;
+	}
+	BOOLEAN status = myCom.Send(&myCom);
 
-	//printf("here: %d\n",myComs.a(1,4));
-
-//	commSetup();
 	// Create all variables required
 
 	//HANDLE hComm;

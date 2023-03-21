@@ -18,6 +18,7 @@ void closeComms(Communications *self) { // Closing the comunications to open the
 	printf("closed the handle\n");
 }
 
+
 BOOLEAN Sendmsg(Communications *self) {	// Send a array of bytes over through the wixel
 	BOOLEAN Status = WriteFile(self->hComm,	// What port to use
 			self->msgBuffer,     			// Data to be written to the port
@@ -30,7 +31,7 @@ BOOLEAN Sendmsg(Communications *self) {	// Send a array of bytes over through th
 	for (int i = 0; i < self->val; i++) {
 		printf("%d:%x ", i, self->msgBuffer[i]);
 	}
-
+	fflush(stdout);
 	printf("\n");
 	return Status;
 }
@@ -39,19 +40,40 @@ int myfunc(Communications *self, int a) { 			// Debug function
 	return self->val + a;
 }
 BOOLEAN Recieve(Communications *self) { 			// Debug function
-	char Dump[self->val];
 	DWORD read;
+	for (int i = 0; i < self->val; i++) {
+		self->Recieved[i] = i;
+	}
+	/*SetCommMask(self->hComm,read);
+	printf("\n__ WAITING FOR RESPONCE FROM WIXEL __\n\n");
+	//WaitCommEvent(self->hComm,&self->Recieved,NULL);
+	WaitCommEvent(self->hComm,&self->Recieved2,NULL);
+	printf("__ RESPONCE RECIEVED __\n");
+	*/
 	BOOLEAN status;
-	status = ReadFile(self->hComm,		//What port to use
-			Dump,								// Where to write read Data
-			self->val,							// Amount of bytes to read
+	char recieved;
+	DWORD totalread=0;
+	int i;
+	for (i=0;i<self->val;i++)	{
+
+	status = ReadFile(self->hComm,				// What port to use
+			&recieved,						// Where to write read Data
+			1,							// Amount of bytes to read
 			&read,								// Amount of bytes actually read
 			NULL);
+	totalread += read;
+	self->Recieved[i]=recieved;
+	}
 
-		if (status) {
-		self->Recieve = Dump;
+	if (totalread==self->val) {
+
+	        printf("File successfully read! %lu bytes read.\n", totalread);
+
+
+	        //printf("%d data read.\n", Dump);
 		return TRUE;
 	} else {
+		printf("mission failed we'll get them next time! %lu bytes read.\n", totalread);
 		return FALSE;
 	}
 }
@@ -62,7 +84,7 @@ Communications commSetup() {		// Default INIT of the Communications struct
 
 	DBprintf("made it here\n");
 	// Creation of communication file
-	myComms.hComm = CreateFileA("\\\\.\\COM7",	//port name
+	myComms.hComm = CreateFileA("\\\\.\\COM8",	//port name
 			GENERIC_READ | GENERIC_WRITE, 		//Read/Write
 			0,                            		// No Sharing
 			NULL,                         		// No Security

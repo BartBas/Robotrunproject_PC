@@ -11,8 +11,8 @@
 #include <windows.h>
 
 typedef struct Communications {
-	void (*Close)(struct Communications *self); 		// close handle
-	BOOLEAN (*Send)(struct Communications *self); 	// send msg
+	void (*Close)(struct Communications *); 		// close handle
+	BOOLEAN (*Send)(struct Communications *); 	// send msg
 	int val;										// Lenght of array
 	int (*a)(struct Communications *self, int val);	// debug function for val + val
 	HANDLE hComm;									// storage of hComm handle

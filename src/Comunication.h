@@ -18,6 +18,7 @@ typedef struct Communications {
 	HANDLE hComm;									// storage of hComm handle
 	DWORD dNoOfBytesWritten;						// Number of bytes send out
 	char msgBuffer[26];								// Buffer for msg to be send
+	BOOLEAN SendSuccesfull;
 	DCB dcb;										// storage for DCB
 	BOOLEAN (*Recieve)(struct Communications *self);
 	char Recieved[26];

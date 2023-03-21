@@ -11,6 +11,10 @@
 #include "DEBUG_Prints.h"
 //#include <windows.h>
 
+#define MSGLENGHT 26
+
+#define START 010
+#define STOP 101
 //#define Buffer_Size 20
 
 void closeComms(Communications *self) { // Closing the comunications to open the com-port
@@ -20,7 +24,28 @@ void closeComms(Communications *self) { // Closing the comunications to open the
 
 
 
+BOOLEAN sendACK(Communications *self){
+	printf("SENDING ACK!");
+	char tmp[3];
+	tmp[0]=START;
+	tmp[1]=255;
+	tmp[2]=STOP;
+	DWORD send;
+	BOOLEAN Status = WriteFile(self->hComm,	// What port to use
+			tmp,     			// Data to be written to the port
+			3, 						// No of bytes to write
+			&send, 		// Bytes written
+			NULL);			// overlapping
+if (send == 3 && Status){
+	return TRUE;
+}
+else {
+	return FALSE;
+}
+}
 BOOLEAN Sendmsg(Communications *self) {	// Send a array of bytes over through the wixel
+	self->msgBuffer[0]=START;
+	self->msgBuffer[self->val-1]=STOP;
 	BOOLEAN Status = WriteFile(self->hComm,	// What port to use
 			self->msgBuffer,     			// Data to be written to the port
 			self->val, 						// No of bytes to write
@@ -41,6 +66,19 @@ int myfunc(Communications *self, int a) { 			// Debug function
 	return self->val + a;
 }
 
+void clearbuffer(Communications *self,int Read){
+	int needToClean = self->val-Read-2;
+	printf("clearing buffer got %d so need to clean %d\n",Read,needToClean+2);
+	DWORD read;
+	for (int i=0;i<needToClean;i++)	{
+		char temp;
+	ReadFile(self->hComm,				// What port to use
+			&temp,							// Where to write read Data
+			1,									// Amount of bytes to read
+			&read,								// Amount of bytes actually read
+			0);
+	}
+}
 
 BOOLEAN Recieve(Communications *self) { 			// Debug function
 	DWORD read=0;
@@ -54,6 +92,8 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 	char recieved;
 	DWORD totalread=0;
 	int i;
+	int y=0;
+	int temp[self->val];
 	printf("trying to recieve msg\n");
 	fflush(stdout);
 	for (i=0;i<self->val;i++)	{
@@ -61,19 +101,33 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 			&recieved,							// Where to write read Data
 			1,									// Amount of bytes to read
 			&read,								// Amount of bytes actually read
-			NULL);
+			0);
+	Sleep(1L);
 	self->Recieved[i]=recieved;
-	printf("\n%c\n",recieved);
-	//GetOverlappedResult(self->hComm,&self->stOverlapped_READ,read,TRUE);
+	if (read>0){
+		temp[y]=recieved;
+		y++;
+	}
 	totalread += read;
-
 	}
 	if (totalread==self->val) {
 		self->newmsg = TRUE;
+		sendACK(self);
 	        printf("File successfully read! %lu bytes read.\n", totalread);
-
 		return TRUE;
-	} else {
+	}else if (temp[0]==8&&temp[1]==-1&&temp[2]==101) {
+		temp[0]=4;
+		printf("msg send succesfully!");
+		self->SendSuccesfull=TRUE;
+		//clearbuffer(self,totalread);
+		return FALSE;
+	} else if (totalread>0) {
+		printf("Scambled msg only got %lu bytes now clearing %lu read.\n", totalread,self->val-totalread);
+		for(int i=0;i<totalread;i++){
+			printf("%d : %d ",i,self->Recieved[i]);
+		}printf("\n");
+		return FALSE;
+	}else {
 		printf("mission failed we'll get them next time! %lu bytes read.\n", totalread);
 		return FALSE;
 	}
@@ -82,6 +136,7 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 Communications commSetup() {		// Default INIT of the Communications struct
 	//structure creation
 	Communications myComms;
+	myComms.newmsg=FALSE;
     OVERLAPPED oRead = { 0 };
     oRead.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	myComms.stOverlapped_READ= oRead;
@@ -94,17 +149,15 @@ Communications commSetup() {		// Default INIT of the Communications struct
 			0,                            		// No Sharing
 			NULL,                         		// No Security
 			OPEN_EXISTING,                      // Open existing port only
-			NULL,            	// Non Overlapped I/O
+			NULL,            					// Non Overlapped I/O
 			NULL);        						// Null for Comm Devices
-	LPCOMMTIMEOUTS timeout = {
-			 MAXDWORD,
-			 MAXDWORD,
-			 100,
-			 100,
-			 100
-	};
-
-	//SetCommTimeouts(myComms.hComm,timeout);
+    COMMTIMEOUTS timeouts = { 0, //interval timeout. 0 = not used
+                              0, // read multiplier
+                             10, // read constant (milliseconds)
+                              0, // Write multiplier
+                             10  // Write Constant
+                            	};
+	SetCommTimeouts(myComms.hComm,&timeouts);
 	if (myComms.hComm == INVALID_HANDLE_VALUE) {
 
 		printf("Error in opening serial port\n");

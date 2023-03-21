@@ -6,6 +6,7 @@
 #include "DEBUG_Prints.h"
 #include "windows.h"
 #include <process.h>
+#include <Winbase.h>
 
 #define BUTTON
 
@@ -15,9 +16,10 @@ Communications myCom;
 
 HWND Static;
 
+BOOL repeat = 1;
+unsigned thread1;
 
-void (*buttons[])();
-
+void (*buttons[9])();
 
 void defaultbutton(){
 	printf("hey");
@@ -30,14 +32,17 @@ void UIsend(){
 	for (int i = 0; i < myCom.val; i++) {
 		myCom.msgBuffer[i] = temp[i];
 	}
+	CancelIo(myCom.hComm);
 	myCom.Send(&myCom);
 }
 
 void UIQuit(){
+	repeat = 0;
 	char temp[26]="cccccccccccccccccccccccccc";
 	for (int i = 0; i < myCom.val; i++) {
 		myCom.msgBuffer[i] = temp[i];
 	}
+	CancelIo(myCom.hComm);
 	myCom.Send(&myCom);
 }
 
@@ -104,10 +109,10 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam, LPARAM LPa
     return 0;
 }
 
-BOOL repeat = 1;
 
 void recieveloop(){
 	while (repeat){
+		printf("I'm inside the thread!");
 	 myCom.Recieve(&myCom);
 	 Sleep(1000L);
 	}
@@ -119,8 +124,8 @@ int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine, int
 	puts("Start of program");
 
 	myCom = commSetup();
-
-	 _beginthread(recieveloop, 0, NULL);
+	_beginthread(recieveloop,0,NULL);
+	Sleep(1000L);
 
 	WNDCLASS WindowClass = {0};
 	    const char ClassName[] = "robotControlls";

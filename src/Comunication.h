@@ -22,6 +22,8 @@ typedef struct Communications {
 	BOOLEAN (*Recieve)(struct Communications *self);
 	char Recieved[26];
 	BOOLEAN newmsg;
+	OVERLAPPED stOverlapped_READ;
+	OVERLAPPED stOverlapped_WRITE;
 
 } Communications;
 

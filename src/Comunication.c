@@ -25,7 +25,7 @@ BOOLEAN Sendmsg(Communications *self) {	// Send a array of bytes over through th
 			self->msgBuffer,     			// Data to be written to the port
 			self->val, 						// No of bytes to write
 			&self->dNoOfBytesWritten, 		// Bytes written
-			NULL);
+			&self->stOverlapped_WRITE);			// overlapping
 
 	printf("Sended bytes: ");
 
@@ -43,7 +43,7 @@ int myfunc(Communications *self, int a) { 			// Debug function
 
 
 BOOLEAN Recieve(Communications *self) { 			// Debug function
-	DWORD read;
+	DWORD read=0;
 	for (int i = 0; i < self->val; i++) {
 		self->Recieved[i] = i;
 	}
@@ -55,20 +55,23 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 	DWORD totalread=0;
 	int i;
 	printf("trying to recieve msg\n");
+	fflush(stdout);
 	for (i=0;i<self->val;i++)	{
 	status = ReadFile(self->hComm,				// What port to use
 			&recieved,							// Where to write read Data
 			1,									// Amount of bytes to read
 			&read,								// Amount of bytes actually read
 			NULL);
-	totalread += read;
 	self->Recieved[i]=recieved;
+	printf("\n%c\n",recieved);
+	//GetOverlappedResult(self->hComm,&self->stOverlapped_READ,read,TRUE);
+	totalread += read;
+
 	}
-
 	if (totalread==self->val) {
-
+		self->newmsg = TRUE;
 	        printf("File successfully read! %lu bytes read.\n", totalread);
-	        self->newmsg = TRUE;
+
 		return TRUE;
 	} else {
 		printf("mission failed we'll get them next time! %lu bytes read.\n", totalread);
@@ -79,17 +82,29 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 Communications commSetup() {		// Default INIT of the Communications struct
 	//structure creation
 	Communications myComms;
-
+    OVERLAPPED oRead = { 0 };
+    oRead.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	myComms.stOverlapped_READ= oRead;
+	myComms.stOverlapped_WRITE= oRead;
 	DBprintf("made it here\n");
 	// Creation of communication file
+
 	myComms.hComm = CreateFileA("\\\\.\\COM8",	//port name
 			GENERIC_READ | GENERIC_WRITE, 		//Read/Write
 			0,                            		// No Sharing
 			NULL,                         		// No Security
 			OPEN_EXISTING,                      // Open existing port only
-			0,            						// Non Overlapped I/O
+			NULL,            	// Non Overlapped I/O
 			NULL);        						// Null for Comm Devices
+	LPCOMMTIMEOUTS timeout = {
+			 MAXDWORD,
+			 MAXDWORD,
+			 100,
+			 100,
+			 100
+	};
 
+	//SetCommTimeouts(myComms.hComm,timeout);
 	if (myComms.hComm == INVALID_HANDLE_VALUE) {
 
 		printf("Error in opening serial port\n");

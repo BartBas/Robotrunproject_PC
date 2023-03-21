@@ -19,6 +19,7 @@ void closeComms(Communications *self) { // Closing the comunications to open the
 }
 
 
+
 BOOLEAN Sendmsg(Communications *self) {	// Send a array of bytes over through the wixel
 	BOOLEAN Status = WriteFile(self->hComm,	// What port to use
 			self->msgBuffer,     			// Data to be written to the port
@@ -39,26 +40,25 @@ BOOLEAN Sendmsg(Communications *self) {	// Send a array of bytes over through th
 int myfunc(Communications *self, int a) { 			// Debug function
 	return self->val + a;
 }
+
+
 BOOLEAN Recieve(Communications *self) { 			// Debug function
 	DWORD read;
 	for (int i = 0; i < self->val; i++) {
 		self->Recieved[i] = i;
 	}
-	/*SetCommMask(self->hComm,read);
-	printf("\n__ WAITING FOR RESPONCE FROM WIXEL __\n\n");
-	//WaitCommEvent(self->hComm,&self->Recieved,NULL);
-	WaitCommEvent(self->hComm,&self->Recieved2,NULL);
-	printf("__ RESPONCE RECIEVED __\n");
-	*/
+	/*
+	SetCommMask(self->hComm,read);
+	WaitCommEvent(self->hComm,&self->Recieved,NULL);*/
 	BOOLEAN status;
 	char recieved;
 	DWORD totalread=0;
 	int i;
+	printf("trying to recieve msg\n");
 	for (i=0;i<self->val;i++)	{
-
 	status = ReadFile(self->hComm,				// What port to use
-			&recieved,						// Where to write read Data
-			1,							// Amount of bytes to read
+			&recieved,							// Where to write read Data
+			1,									// Amount of bytes to read
 			&read,								// Amount of bytes actually read
 			NULL);
 	totalread += read;
@@ -68,9 +68,7 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 	if (totalread==self->val) {
 
 	        printf("File successfully read! %lu bytes read.\n", totalread);
-
-
-	        //printf("%d data read.\n", Dump);
+	        self->newmsg = TRUE;
 		return TRUE;
 	} else {
 		printf("mission failed we'll get them next time! %lu bytes read.\n", totalread);

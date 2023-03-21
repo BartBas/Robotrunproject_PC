@@ -21,6 +21,7 @@ typedef struct Communications {
 	DCB dcb;										// storage for DCB
 	BOOLEAN (*Recieve)(struct Communications *self);
 	char Recieved[26];
+	BOOLEAN newmsg;
 
 } Communications;
 

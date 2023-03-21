@@ -5,10 +5,25 @@
 #include "Comunication.h"
 #include "DEBUG_Prints.h"
 #include "windows.h"
+#include <process.h>
+
+#define BUTTON
 
 #define WIN32_LEAN_AND_MEAN
 
 Communications myCom;
+
+HWND Static;
+
+
+void (*buttons[])();
+
+
+void defaultbutton(){
+	printf("hey");
+	SetWindowText(Static,"NEW TEXT HAS ARIVED!");
+	fflush(stdout);
+}
 
 void UIsend(){
 	char temp[26]="abcdefghijklmnopqrstuvwxyz";
@@ -26,7 +41,7 @@ void UIQuit(){
 	myCom.Send(&myCom);
 }
 
-void createButton(HWND Parent, wchar_t Name[],int x,int y,int w,int h){
+void createButton(HWND Parent, wchar_t Name[],int x,int y,int w,int h,int number){
 	CreateWindowW(
 				L"button",                	//TYPE
 				Name,				//Text on button
@@ -34,15 +49,28 @@ void createButton(HWND Parent, wchar_t Name[],int x,int y,int w,int h){
 				x,y,						// X,Y position
 				w,h,						//Width , Height
 				Parent,						//Parent
+				(HMENU)number,						//HNDL
+				NULL,NULL);
+	buttons[number]=defaultbutton;
+}
+
+HWND createStatic(HWND Parent, wchar_t Name[],int x,int y,int w,int h){
+	return CreateWindowW(
+				L"static",                	//TYPE
+				Name,				//Text on button
+				WS_VISIBLE | WS_CHILD,		//What is it
+				x,y,						// X,Y position
+				w,h,						//Width , Height
+				Parent,						//Parent
 				NULL, NULL,NULL);
+
 }
 
 void AddControls(HWND Parent){
-	createButton(Parent,L"Send msg",10,10,100,20);
+	createButton(Parent,L"Send msg",10,10,100,20,1);
+	Static = createStatic(Parent,L"Text",10,90,1000,50);
 }
-
-
-
+int counter=0;
 LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam, LPARAM LParam) {
     switch(Message) {
         case WM_KEYDOWN: {
@@ -58,7 +86,10 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam, LPARAM LPa
                 } break;
             }
         } break;
-
+        case WM_COMMAND:{
+        	buttons[WParam]();
+        	break;
+        }
         case WM_CREATE:{
         	AddControls(Window);
         	break;
@@ -73,13 +104,23 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam, LPARAM LPa
     return 0;
 }
 
+BOOL repeat = 1;
+
+void recieveloop(){
+	while (repeat){
+	 myCom.Recieve(&myCom);
+	 Sleep(1000L);
+	}
+	_endthread();
+}
+
 int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine, int CmdShow) {
 
 	puts("Start of program");
 
 	myCom = commSetup();
 
-
+	 _beginthread(recieveloop, 0, NULL);
 
 	WNDCLASS WindowClass = {0};
 	    const char ClassName[] = "robotControlls";
@@ -120,11 +161,18 @@ int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine, int
 
 	    while(Running) {
 	        MSG Message;
+
+        	if (myCom.newmsg){
+        		myCom.newmsg=FALSE;
+        	SetWindowText(Static,myCom.Recieved);}
+
 	        while(PeekMessage(&Message, NULL, 0, 0, PM_REMOVE)) {
 	            if(Message.message == WM_QUIT) Running = 0;
 	            TranslateMessage(&Message);
 	            DispatchMessage(&Message);
-	        }
+
+	        	}
+
 
 	    }
 

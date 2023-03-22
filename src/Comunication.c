@@ -144,7 +144,7 @@ Communications commSetup() {		// Default INIT of the Communications struct
 	DBprintf("made it here\n");
 	// Creation of communication file
 
-	myComms.hComm = CreateFileA("\\\\.\\COM8",	//port name
+	myComms.hComm = CreateFileA("\\\\.\\COM4",	//port name
 			GENERIC_READ | GENERIC_WRITE, 		//Read/Write
 			0,                            		// No Sharing
 			NULL,                         		// No Security

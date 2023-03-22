@@ -21,7 +21,7 @@ HWND Static;
 BOOL repeat = 1;
 //unsigned thread1;
 
-void (*buttons[17])(HWND,WPARAM);
+void (*buttons[26])(HWND,WPARAM);
 
 void defaultbutton(HWND Parent,WPARAM WParam){
 	printf("hey\n");
@@ -104,9 +104,9 @@ unsigned char reverseBits(unsigned char num)
 void createOrder(HWND Parent,WPARAM _){
 	unsigned int send=0;
 	printBits(sizeof(int),&send);
-	int temp[16];
+	int temp[25];
 	int counter=0;
-	for (int i=0;i<16;i++){
+	for (int i=0;i<25;i++){
 		if (IsDlgButtonChecked(Parent,i)==BST_CHECKED){
 			temp[counter] = i;
 			counter++;
@@ -129,7 +129,10 @@ void createOrder(HWND Parent,WPARAM _){
 	}
 	unsigned char sendbyte1 = 0;
 	unsigned char sendbyte2 = 0;
-	sendbyte2= reverseBits(sendbyte2 | send);
+	unsigned char sendbyte3 = 0;
+	sendbyte2= reverseBits(sendbyte3 | send);
+	send>>=8;
+	sendbyte1= reverseBits(sendbyte2 | send);
 	send>>=8;
 	sendbyte1= reverseBits(sendbyte1 | send);
 	printf("send byte1: ");
@@ -187,21 +190,21 @@ HWND createStatic(HWND Parent, wchar_t Name[],int x,int y,int w,int h){
 void AddControls(HWND Parent){
 	// GENERATE CHECK BOXES
 	int counter =0;
-	for (int x=4;x>0;x--){ for (int y=4;y>0;y--){
+	for (int x=5;x>0;x--){ for (int y=5;y>0;y--){
 	wchar_t vOut [12];
 	_itow_s(counter,vOut,sizeof(vOut)/2,10);
 	createCheckBX(Parent,vOut,((50*y)-40),((50*x)-40),35,13,counter);
 	counter++;
 	}}
-	createButton(Parent,L"Send Order",250,100,100,20,counter);
+	createButton(Parent,L"Send Order",350,100,100,20,counter);
 	buttons[counter]=createOrder;
 	counter++;
 
-	createButton(Parent,L"EMERGANCY STOP",350,50,150,30,counter);
+	createButton(Parent,L"EMERGENCY STOP",350,50,150,30,counter);
 	buttons[counter]=EMERGACYSTOP;
 	counter++;
 
-	Static = createStatic(Parent,L"3PI ROBOT CONTROLLER THROUGH THE POWER OF THE WIXEL!",10,200,1000,50);
+	Static = createStatic(Parent,L"3PI ROBOT CONTROLLER THROUGH THE POWER OF THE WIXEL!",10,300,1000,50);
 }
 
 

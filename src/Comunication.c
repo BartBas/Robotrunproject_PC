@@ -179,3 +179,13 @@ Communications commSetup() {		// Default INIT of the Communications struct
 	}
 	return myComms;
 }
+
+/*
+ * coms.update(&self)	In		VOID
+ * coms.flag(char)		In		CHAR   		(1 (awaiting order,2 Riding parkour,3 Riding in grid,4 Delivering order, 5 order finished, 6 Manual drive)
+ * coms.arrx			Out		int array
+ * coms.arry			Out		int array
+ * coms.direction		Out		CHAR   		(W,A,S,D)
+ * coms.noodstop 		Out		BOOLEAN
+ */
+

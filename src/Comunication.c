@@ -94,7 +94,7 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 	int i;
 	int y=0;
 	int temp[self->val];
-	printf("trying to recieve msg\n");
+	//printf("trying to recieve msg\n");
 	fflush(stdout);
 	for (i=0;i<self->val;i++)	{
 	status = ReadFile(self->hComm,				// What port to use
@@ -112,7 +112,7 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 	}
 	if (totalread==self->val) {
 		self->newmsg = TRUE;
-		sendACK(self);
+		//sendACK(self);
 	        printf("File successfully read! %lu bytes read.\n", totalread);
 		return TRUE;
 	}else if (temp[0]==8&&temp[1]==-1&&temp[2]==101) {
@@ -122,13 +122,14 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 		//clearbuffer(self,totalread);
 		return FALSE;
 	} else if (totalread>0) {
-		printf("Scambled msg only got %lu bytes now clearing %lu read.\n", totalread,self->val-totalread);
+		//printf("Scambled msg only got %lu bytes now clearing %lu read.\n", totalread,self->val-totalread);
 		for(int i=0;i<totalread;i++){
 			printf("%d : %d ",i,self->Recieved[i]);
 		}printf("\n");
 		return FALSE;
 	}else {
-		printf("mission failed we'll get them next time! %lu bytes read.\n", totalread);
+		//printf("mission failed we'll get them next time! %lu bytes read.\n", totalread);
+
 		return FALSE;
 	}
 }
@@ -144,7 +145,7 @@ Communications commSetup() {		// Default INIT of the Communications struct
 	DBprintf("made it here\n");
 	// Creation of communication file
 
-	myComms.hComm = CreateFileA("\\\\.\\COM4",	//port name
+	myComms.hComm = CreateFileA("\\\\.\\COM7",	//port name
 			GENERIC_READ | GENERIC_WRITE, 		//Read/Write
 			0,                            		// No Sharing
 			NULL,                         		// No Security
@@ -181,11 +182,18 @@ Communications commSetup() {		// Default INIT of the Communications struct
 }
 
 /*
- * coms.update(&self)	In		VOID
- * coms.flag(char)		In		CHAR   		(1 (awaiting order,2 Riding parkour,3 Riding in grid,4 Delivering order, 5 order finished, 6 Manual drive)
- * coms.arrx			Out		int array
- * coms.arry			Out		int array
- * coms.direction		Out		CHAR   		(W,A,S,D)
- * coms.noodstop 		Out		BOOLEAN
+ * send[8] 254 emergency stop
+ * send[8] 250 reset emergency stop
+ * send[8] 245 spin mode
+ * send[8] 240 Manual mode OUTPUT 0 for button not pressed; 1 for button pressed. {[9] UP, [10] LEFT, [11] DOWN, [12] RIGHT}
+ *
+ *
+ * Receive[0]=	START
+ * Receive[1]= 	battery level % 	char
+ * Receive[2]=	magazine process %	char
+ * Receive[3]=	location x			char	Location of robot x;  set to -1 for home -2 for order completion
+ * Receive[4]=	location y			char	Location of robot x;  set to -1 for home -2 for order completion
+ * Receive[5]=	EmergancyStop		char	0 for clear; 1 for stop; 2 for spin; 3 for manual
+ * Receive[max val] = STOP
  */
 

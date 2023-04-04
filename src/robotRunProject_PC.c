@@ -68,8 +68,10 @@ void UIQuit(){
 
 void EMERGACYSTOP(){
 	for (int i = 0; i < myCom.val; i++) {
-		myCom.msgBuffer[i] = 255;
+		myCom.msgBuffer[i] = 254;
 	}
+	myCom.Send(&myCom);
+	myCom.Send(&myCom);
 	myCom.Send(&myCom);
 	myCom.Send(&myCom);
 }
@@ -130,21 +132,30 @@ void createOrder(HWND Parent,WPARAM _){
 	unsigned char sendbyte1 = 0;
 	unsigned char sendbyte2 = 0;
 	unsigned char sendbyte3 = 0;
-	sendbyte2= reverseBits(sendbyte3 | send);
+	unsigned char sendbyte4 = 0;
+	sendbyte4= reverseBits(sendbyte4 | send);
 	send>>=8;
-	sendbyte1= reverseBits(sendbyte2 | send);
+	sendbyte3= reverseBits(sendbyte3 | send);
 	send>>=8;
-	sendbyte1= reverseBits(sendbyte1 | send);
+	sendbyte2= reverseBits(sendbyte2 | send);
+	send>>=8;
+	sendbyte1= sendbyte1 | send;
 	printf("send byte1: ");
 	printBits(sizeof(char),&sendbyte1);
 	printf("send byte2: ");
 	printBits(sizeof(char),&sendbyte2);
+	printf("send byte3: ");
+	printBits(sizeof(char),&sendbyte3);
+	printf("send byte4: ");
+	printBits(sizeof(char),&sendbyte4);
 	SetWindowText(Static,totalchar);
 	for (int i = 0; i < myCom.val; i++) {
 		myCom.msgBuffer[i] = 0;
 	}
 	myCom.msgBuffer[1]=sendbyte1;
 	myCom.msgBuffer[2]=sendbyte2;
+	myCom.msgBuffer[3]=sendbyte3;
+	myCom.msgBuffer[4]=sendbyte4;
 	myCom.Send(&myCom);
 }
 
@@ -246,7 +257,7 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam, LPARAM LPa
 
 void recieveloop(){
 	while (repeat){
-		printf("I'm inside the thread!");
+		//printf("I'm inside the thread!");
 	 myCom.Recieve(&myCom);
 	 Sleep(1000L);
 	}

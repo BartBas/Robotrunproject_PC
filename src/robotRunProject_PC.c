@@ -18,7 +18,7 @@
 Communications myCom;
 RobotStats bot;
 HWND Static, Window, dialogEdit, Robotstats, RobotBat, RobotMP, RobotLocx,
-		RobotLocy, RobotState;
+RobotLocy, RobotState;
 
 BOOL repeat = 1,sending =0;
 
@@ -109,13 +109,15 @@ void MANUALMODE() {
 	myCom.msgBuffer[11] = 0;
 	myCom.msgBuffer[12] = 0;
 	send4tumes();
-	SetWindowText(Static, "MANUAL CONTROLL!");
+
 	if (sending ==1){
+		SetWindowText(Static, "MANUAL CONTROL OFF!");
 		sending =0;
 	}else if (sending ==0){
+		SetWindowText(Static, "MANUAL CONTROL ON!");
 		sending =1;
 	}
-	repeat 	=0;
+	//repeat 	=0;
 }
 
 void printBits(size_t const size, void const *const ptr) {
@@ -292,7 +294,7 @@ void AddControls(HWND Parent) {
 
 	int LOCHeight = 100, LOCWidth = 500,
 
-	//these numbers have to be a equal number
+			//these numbers have to be a equal number
 			statwidth = 75, statheight = 20, nrWidth = 20;
 
 	Robotstats = createStatic(Parent, L"    ROBOT STATS", LOCWidth, LOCHeight,
@@ -325,7 +327,7 @@ void AddControls(HWND Parent) {
 	RobotState = createStatic(Parent, L"State", LOCWidth, LOCHeight,
 			statwidth * 2, statheight);
 
-	createButton(Parent, L"MANUAL CONTROL", 500, 260, 100, 20, counter);
+	createButton(Parent, L"MANUAL CONTROL", 500, 260, 200, 20, counter);
 	buttons[counter] = MANUALMODE;
 	counter++;
 }
@@ -335,57 +337,61 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam,
 		LPARAM LParam) {
 	switch (Message) {
 	case WM_KEYDOWN: {
-		switch (WParam) {
-		case 'O': {
-			DestroyWindow(Window);
-		}
-			break;
-		case 'W': {
-			UpdateDOWN(SW);
-			break;
-		}
-		case 'A': {
-			UpdateDOWN(SA);
-			break;
-		}
-		case 'S': {
-			UpdateDOWN(SS);
-			break;
-		}
-		case 'D': {
-			UpdateDOWN(SD);
-			break;
-		}
-			break;
-		}
-	}
-		break;
-	case WM_KEYUP: {
-		switch (WParam) {
-		case 'O': {
-			DestroyWindow(Window);
-		}
-			break;
-		case 'W': {
-			UpdateUP(SW);
-			break;
-		}
-		case 'A': {
-			UpdateUP(SA);
-			break;
-		}
-		case 'S': {
-			UpdateUP(SS);
-			break;
-		}
-		case 'D': {
-			UpdateUP(SD);
-			break;
-		}
-			break;
-		}
-	}
-		break;
+	        switch (WParam) {
+	        case VK_UP:
+	        case 'W': {
+	            UpdateDOWN(SW);
+	            break;
+	        }
+	        case VK_LEFT:
+	        case 'A': {
+	            UpdateDOWN(SA);
+	            break;
+	        }
+	        case VK_DOWN:
+	        case 'S': {
+	            UpdateDOWN(SS);
+	            break;
+	        }
+	        case VK_RIGHT:
+	        case 'D': {
+	            UpdateDOWN(SD);
+	            break;
+	        }
+	            break;
+	        }
+	    }
+	        break;
+	    case WM_KEYUP: {
+	        switch (WParam) {
+	        case VK_SPACE: {
+	            createOrder(Window,WParam);
+	        }
+	            break;
+	        case VK_UP:
+	        case 'W': {
+	            UpdateUP(SW);
+	            break;
+	        }
+	        case VK_LEFT:
+	        case 'A': {
+	            UpdateUP(SA);
+	            break;
+	        }
+	        case VK_DOWN:
+	        case 'S': {
+	            UpdateUP(SS);
+	            break;
+	        }
+	        case VK_RIGHT:
+	        case 'D': {
+	            UpdateUP(SD);
+	            break;
+	        }
+	            break;
+	        }
+	    }
+	        break;
 	case WM_COMMAND: {
 		buttons[WParam](Window, WParam);
 		SetFocus(Window);
@@ -399,7 +405,7 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam,
 	case WM_DESTROY: {
 		PostQuitMessage(0);
 	}
-		break;
+	break;
 	default: {
 		return DefWindowProc(Window, Message, WParam, LParam);
 	}
@@ -409,9 +415,9 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam,
 
 int DisplayNoComportMessageBox() {
 	int msgboxID =
-	MessageBox(
-	NULL, "Filled in COM port was incorrect", "COM port not found",
-	MB_ICONEXCLAMATION | MB_RETRYCANCEL | MB_DEFBUTTON2);
+			MessageBox(
+					NULL, "Filled in COM port was incorrect", "COM port not found",
+					MB_ICONEXCLAMATION | MB_RETRYCANCEL | MB_DEFBUTTON2);
 
 	switch (msgboxID) {
 	case IDCANCEL:
@@ -545,9 +551,9 @@ void sendLoop() {
 	while (TRUE) {
 		//printf("I'm inside the thread!");
 		if (sending==1){
-		myCom.Send(&myCom);
-		printf("I'm inside this thread now\n");
-		Sleep(200L);
+			myCom.Send(&myCom);
+			printf("I'm inside this thread now\n");
+			Sleep(800L);
 		}
 	}
 	_endthread();

@@ -17,10 +17,12 @@
 //GLOBALS
 Communications myCom;
 RobotStats bot;
-HWND Static, Window, dialogEdit,Robotstats,RobotBat,RobotMP,RobotLocx,RobotLocy,RobotState;
+HWND Static, Window, dialogEdit, Robotstats, RobotBat, RobotMP, RobotLocx,
+		RobotLocy, RobotState;
 
+BOOL repeat = 1,sending =0;
 
-BOOL repeat = 1;
+enum {SW=9,SA=10,SS=11,SD=12};
 
 //PROTOTYPES
 void (*buttons[80])(HWND, WPARAM);
@@ -54,12 +56,12 @@ void defaultcheckBT(HWND Parent, WPARAM WParam) {
 	fflush(stdout);
 }
 
-void UIsend() {
-	char temp[26] = "abcdefghijklmnopqrstuvwxyf";
-	for (int i = 0; i < myCom.val; i++) {
-		myCom.msgBuffer[i] = temp[i];
-	}
-	myCom.Send(&myCom);
+void UpdateDOWN(int i) {
+	myCom.msgBuffer[i] = 1;
+}
+
+void UpdateUP(int i) {
+	myCom.msgBuffer[i] = 0;
 }
 
 void UIQuit() {
@@ -70,7 +72,7 @@ void UIQuit() {
 	myCom.Send(&myCom);
 }
 
-void send4tumes(){
+void send4tumes() {
 	myCom.Send(&myCom);
 	myCom.Send(&myCom);
 	myCom.Send(&myCom);
@@ -94,10 +96,10 @@ void SPINMODE() {
 	for (int i = 0; i < myCom.val; i++) {
 		myCom.msgBuffer[i] = 245;
 	}
-	myCom.msgBuffer[9]=0;
-	myCom.msgBuffer[10]=0;
-	myCom.msgBuffer[11]=0;
-	myCom.msgBuffer[12]=0;
+	myCom.msgBuffer[9] = 0;
+	myCom.msgBuffer[10] = 0;
+	myCom.msgBuffer[11] = 0;
+	myCom.msgBuffer[12] = 0;
 
 	send4tumes();
 }
@@ -108,8 +110,6 @@ void MANUALMODE() {
 	}
 	send4tumes();
 }
-
-
 
 void printBits(size_t const size, void const *const ptr) {
 	unsigned char *b = (unsigned char*) ptr;
@@ -136,18 +136,24 @@ unsigned char reverseBits(unsigned char num) {
 	return reverse_num;
 }
 
-void updateStatsDisplay(){
+void updateStatsDisplay() {
 	char str[4];
 	sprintf(str, "%d", bot.BatLVL);
-	SetWindowText(RobotBat,str);
+	SetWindowText(RobotBat, str);
 	sprintf(str, "%d", bot.MAGproc);
 	SetWindowText(RobotMP, str);
 	sprintf(str, "%d", bot.LocX);
 	SetWindowText(RobotLocx, str);
 	sprintf(str, "%d", bot.LocY);
-	SetWindowText(RobotLocy , str);
+	SetWindowText(RobotLocy, str);
 	sprintf(str, "%d", bot.State);
-	SetWindowText(RobotState , str);
+	SetWindowText(RobotState, str);
+	if(bot.State==3){
+			sending =1;
+			_beginthread(sendLoop, 0, NULL);
+	}else{
+		sending =0;
+	}
 }
 
 void createOrder(HWND Parent, WPARAM _) {
@@ -195,7 +201,7 @@ void createOrder(HWND Parent, WPARAM _) {
 	printBits(sizeof(char), &sendbyte3);
 	printf("send byte4: ");
 	printBits(sizeof(char), &sendbyte4);
-	if(sendbyte1 == 0 && sendbyte2 == 0 && sendbyte3 == 0&& sendbyte4 == 0){
+	if (sendbyte1 == 0 && sendbyte2 == 0 && sendbyte3 == 0 && sendbyte4 == 0) {
 		SetWindowText(Static, "Order Canceled due no places where set");
 		return;
 	}
@@ -282,49 +288,40 @@ void AddControls(HWND Parent) {
 			L"3PI ROBOT CONTROLLER THROUGH THE POWER OF THE WIXEL!", 10, 300,
 			650, 50);
 
-	int LOCHeight=100,LOCWidth=500,
+	int LOCHeight = 100, LOCWidth = 500,
 
-		//these numbers have to be a equal number
-		statwidth=75,statheight=20,
-		nrWidth=20;
+	//these numbers have to be a equal number
+			statwidth = 75, statheight = 20, nrWidth = 20;
 
-	Robotstats = createStatic(Parent,
-			L"    ROBOT STATS", LOCWidth, LOCHeight,
-			statwidth*2, statheight);
-	LOCHeight+=statheight;
-	createStatic(Parent,
-			L"Bat lvl:", LOCWidth, LOCHeight,
-			statwidth-nrWidth, statheight);
-	createStatic(Parent,
-			L"Done:", LOCWidth+statwidth, LOCHeight,
-			statwidth-nrWidth, statheight);
+	Robotstats = createStatic(Parent, L"    ROBOT STATS", LOCWidth, LOCHeight,
+			statwidth * 2, statheight);
+	LOCHeight += statheight;
+	createStatic(Parent, L"Bat lvl:", LOCWidth, LOCHeight, statwidth - nrWidth,
+			statheight);
+	createStatic(Parent, L"Done:", LOCWidth + statwidth, LOCHeight,
+			statwidth - nrWidth, statheight);
 
-	RobotBat = createStatic(Parent,
-				L"99", LOCWidth+statwidth-nrWidth, LOCHeight,
-				nrWidth, statheight);
-	RobotMP = createStatic(Parent,
-				L"99", LOCWidth+statwidth+statwidth-nrWidth, LOCHeight,
-				nrWidth, statheight);
+	RobotBat = createStatic(Parent, L"99", LOCWidth + statwidth - nrWidth,
+			LOCHeight, nrWidth, statheight);
+	RobotMP = createStatic(Parent, L"99",
+			LOCWidth + statwidth + statwidth - nrWidth, LOCHeight, nrWidth,
+			statheight);
 
-	LOCHeight+=statheight;
-	createStatic(Parent,
-			L"Loc x:", LOCWidth, LOCHeight,
-			statwidth-nrWidth, statheight);
-	createStatic(Parent,
-			L"Loc y:", LOCWidth+statwidth, LOCHeight,
-			statwidth-nrWidth, statheight);
+	LOCHeight += statheight;
+	createStatic(Parent, L"Loc x:", LOCWidth, LOCHeight, statwidth - nrWidth,
+			statheight);
+	createStatic(Parent, L"Loc y:", LOCWidth + statwidth, LOCHeight,
+			statwidth - nrWidth, statheight);
 
-	RobotLocx = createStatic(Parent,
-				L"99", LOCWidth+statwidth-nrWidth, LOCHeight,
-				nrWidth, statheight);
-	RobotLocy = createStatic(Parent,
-				L"99", LOCWidth+statwidth+statwidth-nrWidth, LOCHeight,
-				nrWidth, statheight);
+	RobotLocx = createStatic(Parent, L"99", LOCWidth + statwidth - nrWidth,
+			LOCHeight, nrWidth, statheight);
+	RobotLocy = createStatic(Parent, L"99",
+			LOCWidth + statwidth + statwidth - nrWidth, LOCHeight, nrWidth,
+			statheight);
 
-	LOCHeight+=statheight;
-	RobotState = createStatic(Parent,
-			L"State", LOCWidth, LOCHeight,
-			statwidth*2, statheight);
+	LOCHeight += statheight;
+	RobotState = createStatic(Parent, L"State", LOCWidth, LOCHeight,
+			statwidth * 2, statheight);
 }
 
 int counter = 0;
@@ -337,12 +334,47 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam,
 			DestroyWindow(Window);
 		}
 			break;
+		case 'W': {
+			UpdateDOWN(SW);
+			break;
+		}
+		case 'A': {
+			UpdateDOWN(SA);
+			break;
+		}
 		case 'S': {
-			UIsend();
+			UpdateDOWN(SS);
+			break;
+		}
+		case 'D': {
+			UpdateDOWN(SD);
+			break;
 		}
 			break;
-		case 'Q': {
-			UIQuit();
+		}
+	}
+		break;
+	case WM_KEYUP: {
+		switch (WParam) {
+		case 'O': {
+			DestroyWindow(Window);
+		}
+			break;
+		case 'W': {
+			UpdateUP(SW);
+			break;
+		}
+		case 'A': {
+			UpdateUP(SA);
+			break;
+		}
+		case 'S': {
+			UpdateUP(SS);
+			break;
+		}
+		case 'D': {
+			UpdateUP(SD);
+			break;
 		}
 			break;
 		}
@@ -376,7 +408,7 @@ int DisplayNoComportMessageBox() {
 
 	switch (msgboxID) {
 	case IDCANCEL:
-		 return 0;
+		return 0;
 		break;
 	case IDTRYAGAIN:
 		return 1;
@@ -415,7 +447,7 @@ LRESULT CALLBACK DialogProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 			myCom = commSetup(CommPortstr);
 			if (myCom.hComm == INVALID_HANDLE_VALUE) {
 				int check = DisplayNoComportMessageBox();
-				if (check == 0){
+				if (check == 0) {
 					exit(2);
 				}
 			} else {
@@ -473,7 +505,7 @@ void DisplayDialog(HWND hWnd) {
 			0, height - 78,						// X,Y position
 			width/2, 40,						//Width , Height
 			dialogbox,//Parent
-			(HMENU)1, //HNDL
+			(HMENU)1,//HNDL
 			NULL, NULL);
 
 	CreateWindowW(L"button",                	//TYPE
@@ -482,11 +514,10 @@ void DisplayDialog(HWND hWnd) {
 			width/2, height - 78,							// X,Y position
 			width/2, 40,						//Width , Height
 			dialogbox,//Parent
-			(HMENU)2, //HNDL
+			(HMENU)2,//HNDL
 			NULL, NULL);
 	EnableWindow(hWnd, FALSE);
 }
-
 
 void recieveloop() {
 	while (repeat) {
@@ -494,11 +525,19 @@ void recieveloop() {
 		myCom.Recieve(&myCom);
 		if (myCom.newmsg) {
 			myCom.newmsg = FALSE;
-			bot.Update(&myCom,&bot);
+			bot.Update(&myCom, &bot);
 			updateStatsDisplay();
 		}
-		Sleep(1000L);
+		Sleep(200L);
+	}
+	_endthread();
+}
 
+void sendLoop() {
+	while (sending) {
+		//printf("I'm inside the thread!");
+		myCom.Send(&myCom);
+		Sleep(20L);
 	}
 	_endthread();
 }
@@ -513,6 +552,7 @@ int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine,
 	registerDialogClass(Instance);
 
 	_beginthread(recieveloop, 0, NULL);
+
 	Sleep(1000L);
 	char test = 10;
 	printBits(sizeof(char), &test);
@@ -562,7 +602,10 @@ int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine,
 			myCom.SendSuccesfull = FALSE;
 			SetWindowText(Static, "MSG was send succesfully");
 		}
-
+		printf("W: %d\n",myCom.msgBuffer[9]);
+		printf("A: %d\n",myCom.msgBuffer[10]);
+		printf("S: %d\n",myCom.msgBuffer[11]);
+		printf("D: %d\n",myCom.msgBuffer[12]);
 		while (PeekMessage(&Message, NULL, 0, 0, PM_REMOVE)) {
 			if (Message.message == WM_QUIT)
 				Running = 0;

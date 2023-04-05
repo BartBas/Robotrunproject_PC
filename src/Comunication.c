@@ -22,30 +22,27 @@ void closeComms(Communications *self) { // Closing the comunications to open the
 	printf("closed the handle\n");
 }
 
-
-
-BOOLEAN sendACK(Communications *self){
+BOOLEAN sendACK(Communications *self) {
 	printf("SENDING ACK!");
 	char tmp[3];
-	tmp[0]=START;
-	tmp[1]=255;
-	tmp[2]=STOP;
+	tmp[0] = START;
+	tmp[1] = 255;
+	tmp[2] = STOP;
 	DWORD send;
 	BOOLEAN Status = WriteFile(self->hComm,	// What port to use
 			tmp,     			// Data to be written to the port
 			3, 						// No of bytes to write
 			&send, 		// Bytes written
 			NULL);			// overlapping
-if (send == 3 && Status){
-	return TRUE;
-}
-else {
-	return FALSE;
-}
+	if (send == 3 && Status) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
 }
 BOOLEAN Sendmsg(Communications *self) {	// Send a array of bytes over through the wixel
-	self->msgBuffer[0]=START;
-	self->msgBuffer[self->val-1]=STOP;
+	self->msgBuffer[0] = START;
+	self->msgBuffer[self->val - 1] = STOP;
 	BOOLEAN Status = WriteFile(self->hComm,	// What port to use
 			self->msgBuffer,     			// Data to be written to the port
 			self->val, 						// No of bytes to write
@@ -66,87 +63,89 @@ int myfunc(Communications *self, int a) { 			// Debug function
 	return self->val + a;
 }
 
-void clearbuffer(Communications *self,int Read){
-	int needToClean = self->val-Read-2;
-	printf("clearing buffer got %d so need to clean %d\n",Read,needToClean+2);
+void clearbuffer(Communications *self, int Read) {
+	int needToClean = self->val - Read - 2;
+	printf("clearing buffer got %d so need to clean %d\n", Read,
+			needToClean + 2);
 	DWORD read;
-	for (int i=0;i<needToClean;i++)	{
+	for (int i = 0; i < needToClean; i++) {
 		char temp;
-	ReadFile(self->hComm,				// What port to use
-			&temp,							// Where to write read Data
-			1,									// Amount of bytes to read
-			&read,								// Amount of bytes actually read
-			0);
+		ReadFile(self->hComm,				// What port to use
+				&temp,							// Where to write read Data
+				1,									// Amount of bytes to read
+				&read,							// Amount of bytes actually read
+				0);
 	}
 }
 
 BOOLEAN Recieve(Communications *self) { 			// Debug function
-	DWORD read=0;
+	DWORD read = 0;
 	for (int i = 0; i < self->val; i++) {
 		self->Recieved[i] = i;
 	}
 	/*
-	SetCommMask(self->hComm,read);
-	WaitCommEvent(self->hComm,&self->Recieved,NULL);*/
+	 SetCommMask(self->hComm,read);
+	 WaitCommEvent(self->hComm,&self->Recieved,NULL);*/
 	BOOLEAN status;
 	char recieved;
-	DWORD totalread=0;
+	DWORD totalread = 0;
 	int i;
-	int y=0;
+	int y = 0;
 	int temp[self->val];
 	//printf("trying to recieve msg\n");
 	fflush(stdout);
-	for (i=0;i<self->val;i++)	{
-	status = ReadFile(self->hComm,				// What port to use
-			&recieved,							// Where to write read Data
-			1,									// Amount of bytes to read
-			&read,								// Amount of bytes actually read
-			0);
-	//Sleep(1L);
-	self->Recieved[i]=recieved;
-	if (read>0){
-		temp[y]=recieved;
-		y++;
+	for (i = 0; i < self->val; i++) {
+		status = ReadFile(self->hComm,				// What port to use
+				&recieved,							// Where to write read Data
+				1,									// Amount of bytes to read
+				&read,							// Amount of bytes actually read
+				0);
+		//Sleep(1L);
+		self->Recieved[i] = recieved;
+		if (read > 0) {
+			temp[y] = recieved;
+			y++;
+		}
+		totalread += read;
 	}
-	totalread += read;
-	}
-	if (totalread==self->val) {
+	if (totalread == self->val) {
 		self->newmsg = TRUE;
 		//sendACK(self);
-	        printf("File successfully read! %lu bytes read.\n", totalread);
-	        printf("Bat lvl: %d",self->Recieved[1]);
-	        printf("Bat lvl: %d",self->Recieved[2]);
-	        printf("Bat lvl: %d",self->Recieved[3]);
-	        printf("Bat lvl: %d",self->Recieved[4]);
-	        printf("Bat lvl: %d",self->Recieved[5]);
+		printf("File successfully read! %lu bytes read.\n", totalread);
+		printf("Bat lvl: %d\n", self->Recieved[1]);
+		printf("magproc : %d\n", self->Recieved[2]);
+		printf("loc x : %d\n", self->Recieved[3]);
+		printf("loc y : %d\n", self->Recieved[4]);
+		printf("State : %d\n", self->Recieved[5]);
 		return TRUE;
-	}else if (temp[0]==8&&temp[1]==-1&&temp[2]==101) {
-		temp[0]=4;
+	} else if (temp[0] == 8 && temp[1] == -1 && temp[2] == 101) {
+		temp[0] = 4;
 		printf("msg send succesfully!");
-		self->SendSuccesfull=TRUE;
+		self->SendSuccesfull = TRUE;
 		//clearbuffer(self,totalread);
 		return FALSE;
-	} else if (totalread>0) {
+	} else if (totalread > 0) {
 		//printf("Scambled msg only got %lu bytes now clearing %lu read.\n", totalread,self->val-totalread);
-		for(int i=0;i<totalread;i++){
-			printf("%d : %d ",i,self->Recieved[i]);
-		}printf("\n");
+		for (int i = 0; i < totalread; i++) {
+			printf("%d : %d ", i, self->Recieved[i]);
+		}
+		printf("\n");
 		return FALSE;
-	}else {
+	} else {
 		//printf("mission failed we'll get them next time! %lu bytes read.\n", totalread);
 
 		return FALSE;
 	}
 }
 
-Communications commSetup(char comport[]) {		// Default INIT of the Communications struct
+Communications commSetup(char comport[]) {// Default INIT of the Communications struct
 	//structure creation
 	Communications myComms;
-	myComms.newmsg=FALSE;
-    OVERLAPPED oRead = { 0 };
-    oRead.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	myComms.stOverlapped_READ= oRead;
-	myComms.stOverlapped_WRITE= oRead;
+	myComms.newmsg = FALSE;
+	OVERLAPPED oRead = { 0 };
+	oRead.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	myComms.stOverlapped_READ = oRead;
+	myComms.stOverlapped_WRITE = oRead;
 	//DBprintf("made it here\n");
 	// Creation of communication file
 
@@ -157,51 +156,47 @@ Communications commSetup(char comport[]) {		// Default INIT of the Communication
 			OPEN_EXISTING,                      // Open existing port only
 			NULL,            					// Non Overlapped I/O
 			NULL);        						// Null for Comm Devices
-    COMMTIMEOUTS timeouts = { 0, //interval timeout. 0 = not used
-                              0, // read multiplier
-                             10, // read constant (milliseconds)
-                              0, // Write multiplier
-                             10  // Write Constant
-                            	};
-	SetCommTimeouts(myComms.hComm,&timeouts);
+	COMMTIMEOUTS timeouts = { 0, //interval timeout. 0 = not used
+			0, // read multiplier
+			10, // read constant (milliseconds)
+			0, // Write multiplier
+			10  // Write Constant
+			};
+	SetCommTimeouts(myComms.hComm, &timeouts);
 	//if (myComms.hComm != INVALID_HANDLE_VALUE) {
-		printf("opening serial port successful\n");
+	printf("opening serial port successful\n");
+	/*
+	 * Setting pointers and values inside the structure
+	 */
+	myComms.val = sizeof(myComms.msgBuffer) / sizeof(char);	// Size of buffer array
+	myComms.Close = closeComms;						// Close Comms function
+	myComms.Send = Sendmsg;							// Send array function
+	myComms.Recieve = Recieve;						// Recieved msg
+	myComms.SendSuccesfull = FALSE;			// Set send to false to start with
+	memset(&myComms.dcb, 0, sizeof(DCB)); //mem inside the dcb
 
-		/*
-		 * Setting pointers and values inside the structure
-		 */
-		myComms.val = sizeof(myComms.msgBuffer) / sizeof(char);	// Size of buffer array
-		myComms.Close = closeComms;						// Close Comms function
-		myComms.Send = Sendmsg;							// Send array function
-		myComms.Recieve = Recieve;						// Recieved msg
-		myComms.SendSuccesfull = FALSE;					// Set send to false to start with
-		memset(&myComms.dcb, 0, sizeof(DCB)); //mem inside the dcb
-
-		DBprintf("%d\n", myComms.val);
+	DBprintf("%d\n", myComms.val);
 	//}
 	return myComms;
 }
 
-void ROBOTUPDATE(struct Communications * comm,struct RobotStats * robot){
+void ROBOTUPDATE(struct Communications *comm, struct RobotStats *robot) {
 	robot->BatLVL = comm->Recieved[1];
-	robot->MAGproc =comm->Recieved[2];
+	robot->MAGproc = comm->Recieved[2];
 	robot->LocX = comm->Recieved[3];
 	robot->LocY = comm->Recieved[4];
 	robot->State = comm->Recieved[5];
 }
 
-void ROBOT_INIT(RobotStats * robot){
+void ROBOT_INIT(RobotStats *robot) {
 	robot->Update = ROBOTUPDATE;
-	robot->BatLVL =0;
-	robot->MAGproc =0;
-	robot->LocX =-1;
-	robot->LocY =-1;
-	robot->State =0;
-	robot->newMsg =0;
+	robot->BatLVL = 0;
+	robot->MAGproc = 0;
+	robot->LocX = -1;
+	robot->LocY = -1;
+	robot->State = 0;
+	robot->newMsg = 0;
 }
-
-
-
 
 /*
  * send[8] 254 emergency stop
@@ -209,7 +204,7 @@ void ROBOT_INIT(RobotStats * robot){
  * send[8] 245 spin mode
  * send[8] 240 Manual mode OUTPUT 0 for button not pressed; 1 for button pressed. {[9] UP, [10] LEFT, [11] DOWN, [12] RIGHT}
  *
- *
+ *]
  * Receive[0]=	START
  * Receive[1]= 	battery level % 	char
  * Receive[2]=	magazine process %	char

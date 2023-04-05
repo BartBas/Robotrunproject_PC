@@ -55,7 +55,7 @@ BOOLEAN Sendmsg(Communications *self) {	// Send a array of bytes over through th
 	printf("Sended bytes: ");
 
 	for (int i = 0; i < self->val; i++) {
-		printf("%d:%x ", i, self->msgBuffer[i]);
+		printf("%d:%i ", i, self->msgBuffer[i]);
 	}
 	fflush(stdout);
 	printf("\n");
@@ -102,7 +102,7 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 			1,									// Amount of bytes to read
 			&read,								// Amount of bytes actually read
 			0);
-	Sleep(1L);
+	//Sleep(1L);
 	self->Recieved[i]=recieved;
 	if (read>0){
 		temp[y]=recieved;
@@ -134,7 +134,7 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 	}
 }
 
-Communications commSetup() {		// Default INIT of the Communications struct
+Communications commSetup(char comport[]) {		// Default INIT of the Communications struct
 	//structure creation
 	Communications myComms;
 	myComms.newmsg=FALSE;
@@ -142,10 +142,10 @@ Communications commSetup() {		// Default INIT of the Communications struct
     oRead.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	myComms.stOverlapped_READ= oRead;
 	myComms.stOverlapped_WRITE= oRead;
-	DBprintf("made it here\n");
+	//DBprintf("made it here\n");
 	// Creation of communication file
 
-	myComms.hComm = CreateFileA("\\\\.\\COM7",	//port name
+	myComms.hComm = CreateFileA(comport,	//port name
 			GENERIC_READ | GENERIC_WRITE, 		//Read/Write
 			0,                            		// No Sharing
 			NULL,                         		// No Security
@@ -159,11 +159,7 @@ Communications commSetup() {		// Default INIT of the Communications struct
                              10  // Write Constant
                             	};
 	SetCommTimeouts(myComms.hComm,&timeouts);
-	if (myComms.hComm == INVALID_HANDLE_VALUE) {
-
-		printf("Error in opening serial port\n");
-
-	} else {
+	//if (myComms.hComm != INVALID_HANDLE_VALUE) {
 		printf("opening serial port successful\n");
 
 		/*
@@ -177,7 +173,7 @@ Communications commSetup() {		// Default INIT of the Communications struct
 		memset(&myComms.dcb, 0, sizeof(DCB)); //mem inside the dcb
 
 		DBprintf("%d\n", myComms.val);
-	}
+	//}
 	return myComms;
 }
 

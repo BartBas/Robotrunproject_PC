@@ -114,6 +114,11 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 		self->newmsg = TRUE;
 		//sendACK(self);
 	        printf("File successfully read! %lu bytes read.\n", totalread);
+	        printf("Bat lvl: %d",self->Recieved[1]);
+	        printf("Bat lvl: %d",self->Recieved[2]);
+	        printf("Bat lvl: %d",self->Recieved[3]);
+	        printf("Bat lvl: %d",self->Recieved[4]);
+	        printf("Bat lvl: %d",self->Recieved[5]);
 		return TRUE;
 	}else if (temp[0]==8&&temp[1]==-1&&temp[2]==101) {
 		temp[0]=4;

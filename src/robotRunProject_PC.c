@@ -16,7 +16,10 @@
 
 //GLOBALS
 Communications myCom;
-HWND Static, Window, dialogEdit;
+RobotStats bot;
+HWND Static, Window, dialogEdit,Robotstats,RobotBat,RobotMP,RobotLocx,RobotLocy,RobotState;
+
+
 BOOL repeat = 1;
 
 //PROTOTYPES
@@ -67,24 +70,24 @@ void UIQuit() {
 	myCom.Send(&myCom);
 }
 
+void send4tumes(){
+	myCom.Send(&myCom);
+	myCom.Send(&myCom);
+	myCom.Send(&myCom);
+	myCom.Send(&myCom);
+}
 void EMERGACYSTOP() {
 	for (int i = 0; i < myCom.val; i++) {
 		myCom.msgBuffer[i] = 254;
 	}
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
+	send4tumes();
 }
 
 void EMERGACYSTOPRESET() {
 	for (int i = 0; i < myCom.val; i++) {
 		myCom.msgBuffer[i] = 250;
 	}
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
+	send4tumes();
 }
 
 void SPINMODE() {
@@ -95,20 +98,15 @@ void SPINMODE() {
 	myCom.msgBuffer[10]=0;
 	myCom.msgBuffer[11]=0;
 	myCom.msgBuffer[12]=0;
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
+
+	send4tumes();
 }
 
 void MANUALMODE() {
 	for (int i = 0; i < myCom.val; i++) {
 		myCom.msgBuffer[i] = 240;
 	}
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
-	myCom.Send(&myCom);
+	send4tumes();
 }
 
 
@@ -136,6 +134,20 @@ unsigned char reverseBits(unsigned char num) {
 			reverse_num |= 1 << ((NO_OF_BITS - 1) - i);
 	}
 	return reverse_num;
+}
+
+void updateStatsDisplay(){
+	char str[4];
+	sprintf(str, "%d", bot.BatLVL);
+	SetWindowText(RobotBat,str);
+	sprintf(str, "%d", bot.MAGproc);
+	SetWindowText(RobotMP, str);
+	sprintf(str, "%d", bot.LocX);
+	SetWindowText(RobotLocx, str);
+	sprintf(str, "%d", bot.LocY);
+	SetWindowText(RobotLocy , str);
+	sprintf(str, "%d", bot.State);
+	SetWindowText(RobotState , str);
 }
 
 void createOrder(HWND Parent, WPARAM _) {
@@ -183,6 +195,10 @@ void createOrder(HWND Parent, WPARAM _) {
 	printBits(sizeof(char), &sendbyte3);
 	printf("send byte4: ");
 	printBits(sizeof(char), &sendbyte4);
+	if(sendbyte2 == 0 && sendbyte2 == 0 && sendbyte2 == 0&& sendbyte2 == 0){
+		SetWindowText(Static, "Order Canceled due no places where set");
+		return;
+	}
 	SetWindowText(Static, totalchar);
 	for (int i = 0; i < myCom.val; i++) {
 		myCom.msgBuffer[i] = 0;
@@ -244,6 +260,7 @@ void AddControls(HWND Parent) {
 			counter++;
 		}
 	}
+	// GENERATE BUTTONS
 	createButton(Parent, L"Send Order", 350, 100, 100, 20, counter);
 	buttons[counter] = createOrder;
 	counter++;
@@ -260,9 +277,54 @@ void AddControls(HWND Parent) {
 	buttons[counter] = EMERGACYSTOPRESET;
 	counter++;
 
+	// GENERATE STATICS
 	Static = createStatic(Parent,
 			L"3PI ROBOT CONTROLLER THROUGH THE POWER OF THE WIXEL!", 10, 300,
 			650, 50);
+
+	int LOCHeight=100,LOCWidth=500,
+
+		//these numbers have to be a equal number
+		statwidth=75,statheight=20,
+		nrWidth=20;
+
+	Robotstats = createStatic(Parent,
+			L"    ROBOT STATS", LOCWidth, LOCHeight,
+			statwidth*2, statheight);
+	LOCHeight+=statheight;
+	createStatic(Parent,
+			L"Bat lvl:", LOCWidth, LOCHeight,
+			statwidth-nrWidth, statheight);
+	createStatic(Parent,
+			L"Done:", LOCWidth+statwidth, LOCHeight,
+			statwidth-nrWidth, statheight);
+
+	RobotBat = createStatic(Parent,
+				L"99", LOCWidth+statwidth-nrWidth, LOCHeight,
+				nrWidth, statheight);
+	RobotMP = createStatic(Parent,
+				L"99", LOCWidth+statwidth+statwidth-nrWidth, LOCHeight,
+				nrWidth, statheight);
+
+	LOCHeight+=statheight;
+	createStatic(Parent,
+			L"Loc x:", LOCWidth, LOCHeight,
+			statwidth-nrWidth, statheight);
+	createStatic(Parent,
+			L"Loc y:", LOCWidth+statwidth, LOCHeight,
+			statwidth-nrWidth, statheight);
+
+	RobotLocx = createStatic(Parent,
+				L"99", LOCWidth+statwidth-nrWidth, LOCHeight,
+				nrWidth, statheight);
+	RobotLocy = createStatic(Parent,
+				L"99", LOCWidth+statwidth+statwidth-nrWidth, LOCHeight,
+				nrWidth, statheight);
+
+	LOCHeight+=statheight;
+	RobotState = createStatic(Parent,
+			L"State", LOCWidth, LOCHeight,
+			statwidth*2, statheight);
 }
 
 int counter = 0;
@@ -306,18 +368,6 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam,
 	return 0;
 }
 
-void recieveloop() {
-	while (repeat) {
-		//printf("I'm inside the thread!");
-		myCom.Recieve(&myCom);
-		Sleep(1000L);
-	}
-	_endthread();
-}
-
-// TEST CODE BELOW
-
-//TEST CODE ABOVE
 int DisplayNoComportMessageBox() {
 	int msgboxID =
 	MessageBox(
@@ -383,6 +433,7 @@ LRESULT CALLBACK DialogProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 	default:
 		return DefWindowProc(hWnd, msg, wp, lp);
 	}
+	return 0;
 }
 void registerDialogClass(HINSTANCE hInst) {
 	WNDCLASS DialogBox = { 0 };
@@ -436,12 +487,27 @@ void DisplayDialog(HWND hWnd) {
 	EnableWindow(hWnd, FALSE);
 }
 
+
+void recieveloop() {
+	while (repeat) {
+		//printf("I'm inside the thread!");
+		myCom.Recieve(&myCom);
+		Sleep(1000L);
+		if (myCom.newmsg) {
+			myCom.newmsg = FALSE;
+			bot.Update(&myCom,&bot);
+		}
+
+	}
+	_endthread();
+}
+
 int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine,
 		int CmdShow) {
 
 	puts("Start of program");
-
-	myCom = commSetup("\\\\.\\COM2");
+	ROBOT_INIT(&bot);
+	myCom = commSetup("\\\\.\\COM999");
 
 	registerDialogClass(Instance);
 
@@ -487,14 +553,13 @@ int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine,
 
 	while (Running) {
 		MSG Message;
-
-		if (myCom.newmsg) {
-			myCom.newmsg = FALSE;
-			SetWindowText(Static, myCom.Recieved);
+		if (bot.newMsg) {
+			bot.newMsg = FALSE;
+			//SetWindowText(Static, myCom.Recieved);
 		}
 		if (myCom.SendSuccesfull) {
 			myCom.SendSuccesfull = FALSE;
-			SetWindowText(Static, "ROBOT CONTROLS READY TO BE USED");
+			SetWindowText(Static, "MSG was send succesfully");
 		}
 
 		while (PeekMessage(&Message, NULL, 0, 0, PM_REMOVE)) {

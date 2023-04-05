@@ -28,6 +28,17 @@ typedef struct Communications {
 
 } Communications;
 
-Communications commSetup();			// Default INIT of the Communications struct
+typedef struct RobotStats {
+	void (*Update)(struct Communications *,struct RobotStats *);
+	char BatLVL;
+	char MAGproc;
+	char LocX;
+	char LocY;
+	char State;
+	char newMsg;
+} RobotStats;
 
+void ROBOT_INIT(RobotStats *);
+
+Communications commSetup();			// Default INIT of the Communications struct
 #endif /* COMUNICATION_H_ */

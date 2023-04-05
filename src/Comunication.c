@@ -169,13 +169,34 @@ Communications commSetup(char comport[]) {		// Default INIT of the Communication
 		myComms.Close = closeComms;						// Close Comms function
 		myComms.Send = Sendmsg;							// Send array function
 		myComms.Recieve = Recieve;						// Recieved msg
-
+		myComms.SendSuccesfull = FALSE;					// Set send to false to start with
 		memset(&myComms.dcb, 0, sizeof(DCB)); //mem inside the dcb
 
 		DBprintf("%d\n", myComms.val);
 	//}
 	return myComms;
 }
+
+void ROBOTUPDATE(struct Communications * comm,struct RobotStats * robot){
+	robot->BatLVL = comm->Recieved[1];
+	robot->MAGproc =comm->Recieved[2];
+	robot->LocX = comm->Recieved[3];
+	robot->LocY = comm->Recieved[4];
+	robot->State = comm->Recieved[5];
+}
+
+void ROBOT_INIT(RobotStats * robot){
+	robot->Update = ROBOTUPDATE;
+	robot->BatLVL =0;
+	robot->MAGproc =0;
+	robot->LocX =-1;
+	robot->LocY =-1;
+	robot->State =0;
+	robot->newMsg =0;
+}
+
+
+
 
 /*
  * send[8] 254 emergency stop

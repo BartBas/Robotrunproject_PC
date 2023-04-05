@@ -9,6 +9,8 @@
 #define INTERFACE_H_
 
 #include <windows.h>
-int createWindow();
+#include "Comunication.h"
+
+
 
 #endif /* INTERFACE_H_ */

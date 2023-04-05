@@ -280,16 +280,17 @@ void AddControls(HWND Parent) {
 		}
 	}
 	// GENERATE BUTTONS
-	createButton(Parent, L"Send Order", 350, 100, 100, 20, counter);
-	buttons[counter] = createOrder;
-	counter++;
 
-	createButton(Parent, L"EMERGENCY STOP", 350, 50, 150, 30, counter);
+	createButton(Parent, L"EMERGENCY STOP", 350, 10, 150, 30, counter);
 	buttons[counter] = EMERGACYSTOP;
 	counter++;
 
-	createButton(Parent, L"Charging", 500, 50, 150, 30, counter);
+	createButton(Parent, L"Charging", 500, 10, 150, 30, counter);
 	buttons[counter] = CHARGING;
+	counter++;
+
+	createButton(Parent, L"Send Order", 350, 60, 100, 20, counter);
+	buttons[counter] = createOrder;
 	counter++;
 
 	createButton(Parent, L"SPIN MODE", 350, 200, 100, 20, counter);
@@ -298,10 +299,10 @@ void AddControls(HWND Parent) {
 
 	// GENERATE STATICS
 	Static = createStatic(Parent,
-			L"3PI ROBOT CONTROLLER THROUGH THE POWER OF THE WIXEL!", 00, 300,
+			L"3PI ROBOT CONTROLLER THROUGH THE POWER OF THE WIXEL!", 00, 250,
 			680, 50);
 
-	int LOCHeight = 100, LOCWidth = 500,
+	int LOCHeight = 60, LOCWidth = 500,
 
 			//these numbers have to be a equal number
 			statwidth = 75, statheight = 20, nrWidth = 20;
@@ -336,7 +337,7 @@ void AddControls(HWND Parent) {
 	RobotState = createStatic(Parent, L"State", LOCWidth, LOCHeight,
 			statwidth * 2, statheight);
 
-	createButton(Parent, L"MANUAL CONTROL", 500, 250, 150, 20, counter);
+	createButton(Parent, L"MANUAL CONTROL", 500, 200, 150, 20, counter);
 	buttons[counter] = MANUALMODE;
 	counter++;
 }
@@ -603,7 +604,7 @@ int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine,
 			CW_USEDEFAULT,								//x Position
 			CW_USEDEFAULT,								//y Position
 			680,								//Width
-			400,								//Height								//Height
+			350,								//Height								//Height
 			0,											//Parent
 			0,											//Menu
 			Instance,							//Instance (default to windows)

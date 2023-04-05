@@ -125,6 +125,13 @@ void MANUALMODE() {
 	//repeat 	=0;
 }
 
+void COMPLETEORDER() {
+	for (int i = 0; i < myCom.val; i++) {
+		myCom.msgBuffer[i] = 230;
+	}
+	send4tumes();
+}
+
 void printBits(size_t const size, void const *const ptr) {
 	unsigned char *b = (unsigned char*) ptr;
 	unsigned char byte;
@@ -291,6 +298,10 @@ void AddControls(HWND Parent) {
 
 	createButton(Parent, L"Send Order", 350, 60, 100, 20, counter);
 	buttons[counter] = createOrder;
+	counter++;
+
+	createButton(Parent, L"Finish Order", 350, 100, 100, 20, counter);
+	buttons[counter] = COMPLETEORDER;
 	counter++;
 
 	createButton(Parent, L"SPIN MODE", 350, 200, 100, 20, counter);

@@ -195,7 +195,7 @@ void createOrder(HWND Parent, WPARAM _) {
 	printBits(sizeof(char), &sendbyte3);
 	printf("send byte4: ");
 	printBits(sizeof(char), &sendbyte4);
-	if(sendbyte2 == 0 && sendbyte2 == 0 && sendbyte2 == 0&& sendbyte2 == 0){
+	if(sendbyte1 == 0 && sendbyte2 == 0 && sendbyte3 == 0&& sendbyte4 == 0){
 		SetWindowText(Static, "Order Canceled due no places where set");
 		return;
 	}
@@ -492,11 +492,12 @@ void recieveloop() {
 	while (repeat) {
 		//printf("I'm inside the thread!");
 		myCom.Recieve(&myCom);
-		Sleep(1000L);
 		if (myCom.newmsg) {
 			myCom.newmsg = FALSE;
 			bot.Update(&myCom,&bot);
+			updateStatsDisplay();
 		}
+		Sleep(1000L);
 
 	}
 	_endthread();

@@ -29,7 +29,7 @@ void (*buttons[80])(HWND, WPARAM);
 void registerDialogClass(HINSTANCE);
 void DisplayDialog(HWND);
 void sendLoop();
-
+LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam,LPARAM LParam);
 
 // CODE
 void defaultbutton(HWND Parent, WPARAM WParam) {
@@ -60,10 +60,12 @@ void defaultcheckBT(HWND Parent, WPARAM WParam) {
 }
 
 void UpdateDOWN(int i) {
+	printf("%d is down!\n",i);
 	myCom.msgBuffer[i] = 1;
 }
 
 void UpdateUP(int i) {
+	printf("%d is UP!\n",i);
 	myCom.msgBuffer[i] = 0;
 }
 
@@ -93,10 +95,6 @@ void SPINMODE() {
 	for (int i = 0; i < myCom.val; i++) {
 		myCom.msgBuffer[i] = 245;
 	}
-	myCom.msgBuffer[9] = 0;
-	myCom.msgBuffer[10] = 0;
-	myCom.msgBuffer[11] = 0;
-	myCom.msgBuffer[12] = 0;
 
 	send4tumes();
 }
@@ -105,7 +103,19 @@ void MANUALMODE() {
 	for (int i = 0; i < myCom.val; i++) {
 		myCom.msgBuffer[i] = 240;
 	}
+
+	myCom.msgBuffer[9] = 0;
+	myCom.msgBuffer[10] = 0;
+	myCom.msgBuffer[11] = 0;
+	myCom.msgBuffer[12] = 0;
 	send4tumes();
+	SetWindowText(Static, "MANUAL CONTROLL!");
+	if (sending ==1){
+		sending =0;
+	}else if (sending ==0){
+		sending =1;
+	}
+	repeat 	=0;
 }
 
 void printBits(size_t const size, void const *const ptr) {
@@ -146,11 +156,9 @@ void updateStatsDisplay() {
 	sprintf(str, "%d", bot.State);
 	SetWindowText(RobotState, str);
 	if(bot.State==3){
-			SetWindowText(Static, "MANUAL CONTROLL!");
-			sending =1;
-			_beginthread(sendLoop, 0, NULL);
+
 	}else{
-		sending =0;
+		//sending =0;
 	}
 }
 
@@ -216,7 +224,7 @@ void createOrder(HWND Parent, WPARAM _) {
 
 void createButton(HWND Parent, wchar_t Name[], int x, int y, int w, int h,
 		int number) {
-	CreateWindowW(L"button",                	//TYPE
+	HWND button = CreateWindowW(L"button",                	//TYPE
 			Name,//Text on button
 			WS_VISIBLE | WS_CHILD,//What is it
 			x, y,						// X,Y position
@@ -272,7 +280,6 @@ void AddControls(HWND Parent) {
 	createButton(Parent, L"EMERGENCY STOP", 350, 50, 150, 30, counter);
 	buttons[counter] = EMERGACYSTOP;
 	counter++;
-
 
 	createButton(Parent, L"SPIN MODE", 350, 200, 100, 20, counter);
 	buttons[counter] = SPINMODE;
@@ -381,6 +388,7 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam,
 		break;
 	case WM_COMMAND: {
 		buttons[WParam](Window, WParam);
+		SetFocus(Window);
 		break;
 	}
 	case WM_CREATE: {
@@ -534,10 +542,13 @@ void recieveloop() {
 }
 
 void sendLoop() {
-	while (sending) {
+	while (TRUE) {
 		//printf("I'm inside the thread!");
+		if (sending==1){
 		myCom.Send(&myCom);
-		Sleep(20L);
+		printf("I'm inside this thread now\n");
+		Sleep(200L);
+		}
 	}
 	_endthread();
 }
@@ -550,7 +561,7 @@ int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine,
 	myCom = commSetup("\\\\.\\COM999");
 
 	registerDialogClass(Instance);
-
+	_beginthread(sendLoop, 0, NULL);
 	_beginthread(recieveloop, 0, NULL);
 
 	Sleep(1000L);
@@ -602,16 +613,12 @@ int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine,
 			myCom.SendSuccesfull = FALSE;
 			SetWindowText(Static, "MSG was send succesfully");
 		}
-		printf("W: %d\n",myCom.msgBuffer[9]);
-		printf("A: %d\n",myCom.msgBuffer[10]);
-		printf("S: %d\n",myCom.msgBuffer[11]);
-		printf("D: %d\n",myCom.msgBuffer[12]);
+
 		while (PeekMessage(&Message, NULL, 0, 0, PM_REMOVE)) {
 			if (Message.message == WM_QUIT)
 				Running = 0;
 			TranslateMessage(&Message);
 			DispatchMessage(&Message);
-
 		}
 	}
 	myCom.Close(&myCom);

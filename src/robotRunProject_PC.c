@@ -28,7 +28,10 @@ enum {SW=9,SA=10,SS=11,SD=12};
 void (*buttons[80])(HWND, WPARAM);
 void registerDialogClass(HINSTANCE);
 void DisplayDialog(HWND);
+void sendLoop();
 
+
+// CODE
 void defaultbutton(HWND Parent, WPARAM WParam) {
 	printf("hey\n");
 	SetWindowText(Static, "NEW TEXT HAS ARIVED!");
@@ -85,12 +88,6 @@ void EMERGACYSTOP() {
 	send4tumes();
 }
 
-void EMERGACYSTOPRESET() {
-	for (int i = 0; i < myCom.val; i++) {
-		myCom.msgBuffer[i] = 250;
-	}
-	send4tumes();
-}
 
 void SPINMODE() {
 	for (int i = 0; i < myCom.val; i++) {
@@ -149,6 +146,7 @@ void updateStatsDisplay() {
 	sprintf(str, "%d", bot.State);
 	SetWindowText(RobotState, str);
 	if(bot.State==3){
+			SetWindowText(Static, "MANUAL CONTROLL!");
 			sending =1;
 			_beginthread(sendLoop, 0, NULL);
 	}else{
@@ -275,12 +273,9 @@ void AddControls(HWND Parent) {
 	buttons[counter] = EMERGACYSTOP;
 	counter++;
 
-	createButton(Parent, L"RESET TO DRIVE", 500, 50, 150, 30, counter);
-	buttons[counter] = EMERGACYSTOPRESET;
-	counter++;
 
 	createButton(Parent, L"SPIN MODE", 350, 200, 100, 20, counter);
-	buttons[counter] = EMERGACYSTOPRESET;
+	buttons[counter] = SPINMODE;
 	counter++;
 
 	// GENERATE STATICS
@@ -322,6 +317,10 @@ void AddControls(HWND Parent) {
 	LOCHeight += statheight;
 	RobotState = createStatic(Parent, L"State", LOCWidth, LOCHeight,
 			statwidth * 2, statheight);
+
+	createButton(Parent, L"MANUAL CONTROL", 500, 260, 100, 20, counter);
+	buttons[counter] = MANUALMODE;
+	counter++;
 }
 
 int counter = 0;
@@ -467,6 +466,7 @@ LRESULT CALLBACK DialogProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 	}
 	return 0;
 }
+
 void registerDialogClass(HINSTANCE hInst) {
 	WNDCLASS DialogBox = { 0 };
 	DialogBox.lpfnWndProc = DialogProcedure;

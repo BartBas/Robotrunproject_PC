@@ -89,7 +89,12 @@ void EMERGACYSTOP() {
 	}
 	send4tumes();
 }
-
+void CHARGING() {
+	for (int i = 0; i < myCom.val; i++) {
+		myCom.msgBuffer[i] = 250;
+	}
+	send4tumes();
+}
 
 void SPINMODE() {
 	for (int i = 0; i < myCom.val; i++) {
@@ -281,6 +286,10 @@ void AddControls(HWND Parent) {
 
 	createButton(Parent, L"EMERGENCY STOP", 350, 50, 150, 30, counter);
 	buttons[counter] = EMERGACYSTOP;
+	counter++;
+
+	createButton(Parent, L"Charging", 500, 50, 150, 30, counter);
+	buttons[counter] = CHARGING;
 	counter++;
 
 	createButton(Parent, L"SPIN MODE", 350, 200, 100, 20, counter);

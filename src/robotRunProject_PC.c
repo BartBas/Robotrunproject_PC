@@ -298,8 +298,8 @@ void AddControls(HWND Parent) {
 
 	// GENERATE STATICS
 	Static = createStatic(Parent,
-			L"3PI ROBOT CONTROLLER THROUGH THE POWER OF THE WIXEL!", 10, 300,
-			650, 50);
+			L"3PI ROBOT CONTROLLER THROUGH THE POWER OF THE WIXEL!", 00, 300,
+			680, 50);
 
 	int LOCHeight = 100, LOCWidth = 500,
 
@@ -336,7 +336,7 @@ void AddControls(HWND Parent) {
 	RobotState = createStatic(Parent, L"State", LOCWidth, LOCHeight,
 			statwidth * 2, statheight);
 
-	createButton(Parent, L"MANUAL CONTROL", 500, 260, 200, 20, counter);
+	createButton(Parent, L"MANUAL CONTROL", 500, 250, 150, 20, counter);
 	buttons[counter] = MANUALMODE;
 	counter++;
 }
@@ -602,8 +602,8 @@ int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine,
 			WS_OVERLAPPEDWINDOW | WS_VISIBLE,			//Style of window
 			CW_USEDEFAULT,								//x Position
 			CW_USEDEFAULT,								//y Position
-			CW_USEDEFAULT,								//Width
-			CW_USEDEFAULT,								//Height
+			680,								//Width
+			400,								//Height								//Height
 			0,											//Parent
 			0,											//Menu
 			Instance,							//Instance (default to windows)

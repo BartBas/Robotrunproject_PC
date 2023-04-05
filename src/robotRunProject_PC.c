@@ -334,8 +334,8 @@ void AddControls(HWND Parent) {
 			statheight);
 
 	LOCHeight += statheight;
-	RobotState = createStatic(Parent, L"State", LOCWidth, LOCHeight,
-			statwidth * 2, statheight);
+	//RobotState = createStatic(Parent, L"State", LOCWidth, LOCHeight,
+	//		statwidth * 2, statheight);
 
 	createButton(Parent, L"MANUAL CONTROL", 500, 200, 150, 20, counter);
 	buttons[counter] = MANUALMODE;

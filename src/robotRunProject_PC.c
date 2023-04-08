@@ -39,23 +39,23 @@ void defaultbutton(HWND Parent, WPARAM WParam) {
 }
 
 void defaultcheckBT(HWND Parent, WPARAM WParam) {
-	SetWindowText(Static, "button was checked");
+	//SetWindowText(Static, "button was checked");
 	char temp[10];
-	char MSG[50] = "Place ";
+	char MSG[50] = "plek ";
 	sprintf(temp, "%d", WParam);
 	strcat(MSG, temp);
 	BOOL checked = IsDlgButtonChecked(Parent, WParam);
 	if (checked) {
 		CheckDlgButton(Parent, WParam, BST_UNCHECKED);
-		strcpy(temp, " was unchecked");
+		strcpy(temp, " is uitgevinkt");
 		strcat(MSG, temp);
-		SetWindowText(Static, MSG);
 	} else {
 		CheckDlgButton(Parent, WParam, BST_CHECKED);
-		strcpy(temp, " was checked");
+		strcpy(temp, " is aangevinkt");
 		strcat(MSG, temp);
-		SetWindowText(Static, MSG);
+
 	}
+	SetWindowText(Static, MSG);
 	fflush(stdout);
 }
 
@@ -116,10 +116,10 @@ void MANUALMODE() {
 	send4tumes();
 
 	if (sending ==1){
-		SetWindowText(Static, "MANUAL CONTROL OFF!");
+		SetWindowText(Static, "Handmatige bestuuring is uit");
 		sending =0;
 	}else if (sending ==0){
-		SetWindowText(Static, "MANUAL CONTROL ON!");
+		SetWindowText(Static, "andmatige bestuuring is aan");
 		sending =1;
 	}
 	//repeat 	=0;
@@ -159,21 +159,14 @@ unsigned char reverseBits(unsigned char num) {
 
 void updateStatsDisplay() {
 	char str[4];
-	sprintf(str, "%d", bot.BatLVL);
+	sprintf(str, "%d%", bot.BatLVL);
 	SetWindowText(RobotBat, str);
-	sprintf(str, "%d", bot.MAGproc);
+	sprintf(str, "%d%", bot.MAGproc);
 	SetWindowText(RobotMP, str);
 	sprintf(str, "%d", bot.LocX);
 	SetWindowText(RobotLocx, str);
 	sprintf(str, "%d", bot.LocY);
 	SetWindowText(RobotLocy, str);
-	sprintf(str, "%d", bot.State);
-	SetWindowText(RobotState, str);
-	if(bot.State==3){
-
-	}else{
-		//sending =0;
-	}
 }
 
 void createOrder(HWND Parent, WPARAM _) {
@@ -194,7 +187,7 @@ void createOrder(HWND Parent, WPARAM _) {
 	}
 	send >>= 1;
 	printBits(sizeof(int), &send);
-	char totalchar[50] = "Send to places: ";
+	char totalchar[50] = "verstuurd naar de plek(ken): ";
 	char tempstr[10];
 	for (int i = 0; i < counter; i++) {
 		printf(" place: %d\n", temp[i]);
@@ -222,7 +215,7 @@ void createOrder(HWND Parent, WPARAM _) {
 	printf("send byte4: ");
 	printBits(sizeof(char), &sendbyte4);
 	if (sendbyte1 == 0 && sendbyte2 == 0 && sendbyte3 == 0 && sendbyte4 == 0) {
-		SetWindowText(Static, "Order Canceled due no places where set");
+		SetWindowText(Static, "Order is niet gestuurd gezien geen plekken aangevinkt zijn!");
 		return;
 	}
 	SetWindowText(Static, totalchar);
@@ -288,29 +281,29 @@ void AddControls(HWND Parent) {
 	}
 	// GENERATE BUTTONS
 
-	createButton(Parent, L"EMERGENCY STOP", 350, 10, 150, 30, counter);
+	createButton(Parent, L"NOODSTOP", 350, 10, 150, 30, counter);
 	buttons[counter] = EMERGACYSTOP;
 	counter++;
 
-	createButton(Parent, L"Charging", 500, 10, 150, 30, counter);
+	createButton(Parent, L"Opladen", 500, 10, 150, 30, counter);
 	buttons[counter] = CHARGING;
 	counter++;
 
-	createButton(Parent, L"Send Order", 350, 60, 100, 20, counter);
+	createButton(Parent, L"Verstuur bestelling", 350, 60, 150, 20, counter);
 	buttons[counter] = createOrder;
 	counter++;
 
-	createButton(Parent, L"Finish Order", 350, 100, 100, 20, counter);
+	createButton(Parent, L"Bestelling afronden", 350, 100, 150, 20, counter);
 	buttons[counter] = COMPLETEORDER;
 	counter++;
 
-	createButton(Parent, L"SPIN MODE", 350, 200, 100, 20, counter);
+	createButton(Parent, L"Draaien", 350, 200, 100, 20, counter);
 	buttons[counter] = SPINMODE;
 	counter++;
 
 	// GENERATE STATICS
 	Static = createStatic(Parent,
-			L"3PI ROBOT CONTROLLER THROUGH THE POWER OF THE WIXEL!", 00, 250,
+			L"3PI ROBOT CONTROLLER MEDEMOGENLIJK GEMAAKT DOOR DE WIXEL!", 00, 250,
 			680, 50);
 
 	int LOCHeight = 60, LOCWidth = 500,
@@ -321,9 +314,9 @@ void AddControls(HWND Parent) {
 	Robotstats = createStatic(Parent, L"    ROBOT STATS", LOCWidth, LOCHeight,
 			statwidth * 2, statheight);
 	LOCHeight += statheight;
-	createStatic(Parent, L"Bat lvl:", LOCWidth, LOCHeight, statwidth - nrWidth,
+	createStatic(Parent, L"Batterij:", LOCWidth, LOCHeight, statwidth - nrWidth,
 			statheight);
-	createStatic(Parent, L"Done:", LOCWidth + statwidth, LOCHeight,
+	createStatic(Parent, L"Klaar:", LOCWidth + statwidth, LOCHeight,
 			statwidth - nrWidth, statheight);
 
 	RobotBat = createStatic(Parent, L"99", LOCWidth + statwidth - nrWidth,
@@ -348,7 +341,7 @@ void AddControls(HWND Parent) {
 	//RobotState = createStatic(Parent, L"State", LOCWidth, LOCHeight,
 	//		statwidth * 2, statheight);
 
-	createButton(Parent, L"MANUAL CONTROL", 500, 200, 150, 20, counter);
+	createButton(Parent, L"HANDMATIG", 500, 200, 150, 20, counter);
 	buttons[counter] = MANUALMODE;
 	counter++;
 }
@@ -437,7 +430,7 @@ LRESULT CALLBACK WindowProc(HWND Window, UINT Message, WPARAM WParam,
 int DisplayNoComportMessageBox() {
 	int msgboxID =
 			MessageBox(
-					NULL, "Filled in COM port was incorrect", "COM port not found",
+					NULL, "Ingevulde comport is incorrect", "Comport niet gevonden",
 					MB_ICONEXCLAMATION | MB_RETRYCANCEL | MB_DEFBUTTON2);
 
 	switch (msgboxID) {
@@ -520,7 +513,7 @@ void DisplayDialog(HWND hWnd) {
 
 	// CREATE TEXT
 	createStatic(dialogbox,
-			L"           Please insert COM Port Number\n                Where wixel is connected",
+			L"           Vul de comport nummer in\n        waar de wixel is op aangesloten",
 			0, 0, width, 50);
 
 	// CREATE INPUT
@@ -535,7 +528,7 @@ void DisplayDialog(HWND hWnd) {
 
 	// CREATE BUTTONS
 	CreateWindowW(L"button",                	//TYPE
-			L"ABORT",//Text on button
+			L"Annuleer",//Text on button
 			WS_VISIBLE | WS_CHILD,//What is it
 			0, height - 78,						// X,Y position
 			width/2, 40,						//Width , Height
@@ -544,7 +537,7 @@ void DisplayDialog(HWND hWnd) {
 			NULL, NULL);
 
 	CreateWindowW(L"button",                	//TYPE
-			L"SET",//Text on button
+			L"Oke",//Text on button
 			WS_VISIBLE | WS_CHILD,//What is it
 			width/2, height - 78,							// X,Y position
 			width/2, 40,						//Width , Height
@@ -638,7 +631,7 @@ int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine,
 		}
 		if (myCom.SendSuccesfull) {
 			myCom.SendSuccesfull = FALSE;
-			SetWindowText(Static, "MSG was send succesfully");
+			SetWindowText(Static, "Bericht was succesvol verstuurd");
 		}
 
 		while (PeekMessage(&Message, NULL, 0, 0, PM_REMOVE)) {

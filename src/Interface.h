@@ -11,6 +11,13 @@
 #include <windows.h>
 #include "Comunication.h"
 
+wchar_t NLOK[50] = L"NOODSTOP";
+wchar_t NLCANCEL[50] = L"NOODSTOP";
 
+wchar_t NLEBRAKE[50] = L"NOODSTOP";
+wchar_t NLSEND[50] = L"NOODSTOP";
+
+//wchar_t EBRAKE = L"NOODSTOP";
+//wchar_t EBRAKE = L"NOODSTOP";
 
 #endif /* INTERFACE_H_ */

@@ -11,7 +11,7 @@
 #include <math.h>
 
 #define BUTTON
-
+#define NotifTimer 10000
 #define WIN32_LEAN_AND_MEAN
 
 //GLOBALS
@@ -553,8 +553,13 @@ void recieveloop() {
 		myCom.Recieve(&myCom);
 		if (myCom.newmsg) {
 			myCom.newmsg = FALSE;
+			myCom.timeSinceLastMsg = GetTickCount();
 			bot.Update(&myCom, &bot);
 			updateStatsDisplay();
+
+		}
+		if (myCom.timeSinceLastMsg+NotifTimer <=GetTickCount()){
+			SetWindowText(Static, "ROBOT STUURD NIKS MEER!!!");
 		}
 		Sleep(200L);
 	}
@@ -575,7 +580,7 @@ void sendLoop() {
 
 int WINAPI WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, PSTR CmdLine,
 		int CmdShow) {
-
+	printf("%d:::::\n",GetTickCount());
 	puts("Start of program");
 	ROBOT_INIT(&bot);
 	myCom = commSetup("\\\\.\\COM999");

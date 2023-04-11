@@ -25,6 +25,7 @@ typedef struct Communications {
 	BOOLEAN newmsg;
 	OVERLAPPED stOverlapped_READ;
 	OVERLAPPED stOverlapped_WRITE;
+	DWORD timeSinceLastMsg;
 
 } Communications;
 

@@ -109,6 +109,7 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 		totalread += read;
 	}
 	if (totalread == self->val) {
+		myCom.timeSinceLastMsg = GetTickCount();
 		self->newmsg = TRUE;
 		//sendACK(self);
 		printf("File successfully read! %lu bytes read.\n", totalread);
@@ -119,12 +120,14 @@ BOOLEAN Recieve(Communications *self) { 			// Debug function
 		printf("State : %d\n", self->Recieved[5]);
 		return TRUE;
 	} else if (temp[0] == 8 && temp[1] == -1 && temp[2] == 101) {
+		myCom.timeSinceLastMsg = GetTickCount();
 		temp[0] = 4;
 		printf("msg send succesfully!");
 		self->SendSuccesfull = TRUE;
 		//clearbuffer(self,totalread);
 		return FALSE;
 	} else if (totalread > 0) {
+		myCom.timeSinceLastMsg = GetTickCount();
 		//printf("Scambled msg only got %lu bytes now clearing %lu read.\n", totalread,self->val-totalread);
 		for (int i = 0; i < totalread; i++) {
 			printf("%d : %d ", i, self->Recieved[i]);
@@ -174,7 +177,7 @@ Communications commSetup(char comport[]) {// Default INIT of the Communications 
 	myComms.Recieve = Recieve;						// Recieved msg
 	myComms.SendSuccesfull = FALSE;			// Set send to false to start with
 	memset(&myComms.dcb, 0, sizeof(DCB)); //mem inside the dcb
-
+	myComms.timeSinceLastMsg = 0;
 	DBprintf("%d\n", myComms.val);
 	//}
 	return myComms;

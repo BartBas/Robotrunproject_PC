@@ -553,13 +553,12 @@ void recieveloop() {
 		myCom.Recieve(&myCom);
 		if (myCom.newmsg) {
 			myCom.newmsg = FALSE;
-			myCom.timeSinceLastMsg = GetTickCount();
+
 			bot.Update(&myCom, &bot);
 			updateStatsDisplay();
-
 		}
-		if (myCom.timeSinceLastMsg+NotifTimer <=GetTickCount()){
-			SetWindowText(Static, "ROBOT STUURD NIKS MEER!!!");
+		if (myCom.timeSinceLastMsg+NotifTimer <=GetTickCount()&& myCom.timeSinceLastMsg !=0){
+			SetWindowText(Static, "ROBOT STUURT NIKS MEER!");
 		}
 		Sleep(200L);
 	}
